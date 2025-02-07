@@ -3,7 +3,7 @@
 # dependencies
 node_modules/
 Tabify-Project/node_modules
-../Tabify/Tabify-Project/app.py
+app.py
 
 # Expo
 .expo/
