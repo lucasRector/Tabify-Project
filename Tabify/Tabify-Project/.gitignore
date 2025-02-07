@@ -4,6 +4,7 @@
 node_modules/
 Tabify-Project/node_modules
 *.py
+*.cache
 
 # Expo
 .expo/
