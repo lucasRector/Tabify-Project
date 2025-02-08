@@ -4454,6 +4454,7 @@ ms@2.0.0:
     react-native-safe-area-context "^5.1.0"
     react-native-screens "^4.5.0"
     react-native-vector-icons "^10.2.0"
+    react-native-webview "^13.13.2"
 
 mz@^2.7.0:
   version "2.7.0"
