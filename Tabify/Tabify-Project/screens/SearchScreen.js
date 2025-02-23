@@ -12,48 +12,59 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SearchScreen = ({ navigation, route }) => {
-  const [youtubeURL, setYoutubeURL] = useState(route.params?.youtubeURL || ""); // Pre-populate the input field
+  const [youtubeURL, setYoutubeURL] = useState(route.params?.youtubeURL || "");
   const [songData, setSongData] = useState(route.params?.songData || null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
 
-  // Automatically fetch song data when the screen loads (if autoSearch is true)
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        const savedHistory = await AsyncStorage.getItem("songHistory");
+        if (savedHistory) {
+          setHistory(JSON.parse(savedHistory));
+        }
+        if (!songData) {
+          await AsyncStorage.multiSet([
+            ["currentGuitarTabsUrl", ""],
+            ["currentYouTubeLessonsUrl", ""],
+            ["hasActiveSearch", "false"],
+          ]);
+          console.log("Forced reset of search-related AsyncStorage keys on app start.");
+        } else {
+          console.log("Preserving active search state due to songData:", songData);
+        }
+        const currentState = await AsyncStorage.multiGet([
+          "hasActiveSearch",
+          "currentGuitarTabsUrl",
+          "currentYouTubeLessonsUrl",
+        ]);
+        console.log("AsyncStorage state after init:", currentState);
+      } catch (error) {
+        console.error("Error initializing app:", error);
+      }
+    };
+    initializeApp();
+  }, []);
+
   useEffect(() => {
     if (route.params?.autoSearch && youtubeURL) {
       fetchSongData();
     }
   }, [youtubeURL, route.params?.autoSearch]);
 
-  // Update youtubeURL when route.params changes
   useEffect(() => {
     if (route.params?.youtubeURL) {
       setYoutubeURL(route.params.youtubeURL);
     }
   }, [route.params?.youtubeURL]);
 
-  // Clear songData when youtubeURL changes (e.g., when navigating from history)
   useEffect(() => {
     if (route.params?.youtubeURL) {
-      setSongData(null); // Clear the previous search result
+      setSongData(null);
     }
   }, [route.params?.youtubeURL]);
 
-  // Load history from AsyncStorage
-  useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const savedHistory = await AsyncStorage.getItem("songHistory");
-        if (savedHistory) {
-          setHistory(JSON.parse(savedHistory));
-        }
-      } catch (error) {
-        console.error("Error loading history:", error);
-      }
-    };
-    loadHistory();
-  }, []);
-
-  // Fetch song data from the backend
   const fetchSongData = async () => {
     if (!youtubeURL) {
       alert("Please enter a YouTube URL.");
@@ -68,21 +79,35 @@ const SearchScreen = ({ navigation, route }) => {
       const data = await response.json();
       setSongData(data);
 
-      // Add the new song to history
+      const timestamp = new Date().toISOString();
       const newHistory = [
         {
           song: data.song,
           artist: data.artist,
           tabs: data.tabs,
           youtube_lessons: data.youtube_lessons,
-          spotify: data.spotify, // Ensure album_art is included
-          youtubeURL: youtubeURL, // Save the YouTube URL in history
+          spotify: data.spotify,
+          youtubeURL: youtubeURL,
+          timestamp,
         },
         ...history,
       ];
       setHistory(newHistory);
-      await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
-      console.log("Saved History:", newHistory); // Debugging
+
+      // Atomically update all AsyncStorage keys
+      await AsyncStorage.multiSet([
+        ["songHistory", JSON.stringify(newHistory)],
+        ["currentGuitarTabsUrl", data.tabs || ""],
+        ["currentYouTubeLessonsUrl", data.youtube_lessons || ""],
+        ["hasActiveSearch", "true"],
+      ]);
+      console.log("Saved new search data - tabs:", data.tabs, "lessons:", data.youtube_lessons);
+      const updatedState = await AsyncStorage.multiGet([
+        "currentGuitarTabsUrl",
+        "currentYouTubeLessonsUrl",
+        "hasActiveSearch",
+      ]);
+      console.log("AsyncStorage state after search:", updatedState);
     } catch (error) {
       console.error("Error fetching data:", error);
       alert("An error occurred while fetching the song data.");
@@ -90,14 +115,28 @@ const SearchScreen = ({ navigation, route }) => {
     setLoading(false);
   };
 
-  // Open a URL in the in-app browser
-  const openInAppBrowser = (url) => {
+  const openInGuitarTabsScreen = (url) => {
     if (!url) {
-      console.error("No URL provided");
+      console.error("No URL provided for Guitar Tabs");
       return;
     }
-    console.log("Opening URL:", url); // Debugging
-    navigation.navigate("WebView", { url });
+    console.log("Navigating to GuitarTabsScreen with URL:", url);
+    navigation.navigate("Guitar Tabs", {
+      screen: "GuitarTabsScreen",
+      params: { url },
+    });
+  };
+
+  const openInYouTubeLessonsScreen = (url) => {
+    if (!url) {
+      console.error("No URL provided for YouTube Lessons");
+      return;
+    }
+    console.log("Navigating to YouTubeLessonsScreen with URL:", url);
+    navigation.navigate("YouTube Lessons", {
+      screen: "YouTubeLessonsScreen",
+      params: { url },
+    });
   };
 
   return (
@@ -121,10 +160,10 @@ const SearchScreen = ({ navigation, route }) => {
           {songData.spotify?.album_art && (
             <Image source={{ uri: songData.spotify.album_art }} style={styles.albumArt} />
           )}
-          <TouchableOpacity onPress={() => openInAppBrowser(songData.tabs)}>
+          <TouchableOpacity onPress={() => openInGuitarTabsScreen(songData.tabs)}>
             <Text style={styles.link}>🎸 Guitar Tabs</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => openInAppBrowser(songData.youtube_lessons)}>
+          <TouchableOpacity onPress={() => openInYouTubeLessonsScreen(songData.youtube_lessons)}>
             <Text style={styles.link}>📺 YouTube Lessons</Text>
           </TouchableOpacity>
         </View>
