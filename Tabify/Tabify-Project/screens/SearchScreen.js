@@ -1,3 +1,11 @@
+/**
+ * SearchScreen Component
+ * 
+ * This React Native screen allows users to enter a YouTube URL, fetch song data,
+ * and navigate to guitar tabs or YouTube lessons. It also manages search history
+ * using AsyncStorage.
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -8,9 +16,16 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Share, // Revert to using Share instead of Linking
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+/**
+ * SearchScreen Component
+ * 
+ * @param {Object} navigation - Navigation object for navigating between screens.
+ * @param {Object} route - Route object to access parameters passed to the screen.
+ */
 const SearchScreen = ({ navigation, route }) => {
   const [youtubeURL, setYoutubeURL] = useState(route.params?.youtubeURL || "");
   const [songData, setSongData] = useState(route.params?.songData || null);
@@ -94,7 +109,6 @@ const SearchScreen = ({ navigation, route }) => {
       ];
       setHistory(newHistory);
 
-      // Atomically update all AsyncStorage keys
       await AsyncStorage.multiSet([
         ["songHistory", JSON.stringify(newHistory)],
         ["currentGuitarTabsUrl", data.tabs || ""],
@@ -102,12 +116,6 @@ const SearchScreen = ({ navigation, route }) => {
         ["hasActiveSearch", "true"],
       ]);
       console.log("Saved new search data - tabs:", data.tabs, "lessons:", data.youtube_lessons);
-      const updatedState = await AsyncStorage.multiGet([
-        "currentGuitarTabsUrl",
-        "currentYouTubeLessonsUrl",
-        "hasActiveSearch",
-      ]);
-      console.log("AsyncStorage state after search:", updatedState);
     } catch (error) {
       console.error("Error fetching data:", error);
       alert("An error occurred while fetching the song data.");
@@ -116,27 +124,36 @@ const SearchScreen = ({ navigation, route }) => {
   };
 
   const openInGuitarTabsScreen = (url) => {
-    if (!url) {
-      console.error("No URL provided for Guitar Tabs");
-      return;
-    }
-    console.log("Navigating to GuitarTabsScreen with URL:", url);
-    navigation.navigate("Guitar Tabs", {
-      screen: "GuitarTabsScreen",
-      params: { url },
-    });
+    if (!url) return;
+    navigation.navigate("Guitar Tabs", { screen: "GuitarTabsScreen", params: { url } });
   };
 
   const openInYouTubeLessonsScreen = (url) => {
-    if (!url) {
-      console.error("No URL provided for YouTube Lessons");
-      return;
+    if (!url) return;
+    navigation.navigate("YouTube Lessons", { screen: "YouTubeLessonsScreen", params: { url } });
+  };
+
+  /**
+   * Handles sharing the song details via the native share dialog.
+   */
+  const handleShare = async () => {
+    if (!songData) return;
+
+    const message = `Hey! I'm learning "${songData.song}" by ${songData.artist} on guitar using Tabify. Check out the album art: ${songData.spotify?.album_art || "No album art available"}!`;
+
+    try {
+      const result = await Share.share({
+        message,
+      });
+      if (result.action === Share.sharedAction) {
+        console.log("Song shared successfully!");
+      } else if (result.action === Share.dismissedAction) {
+        console.log("Share dismissed.");
+      }
+    } catch (error) {
+      console.error("Error sharing song:", error);
+      alert("An error occurred while sharing.");
     }
-    console.log("Navigating to YouTubeLessonsScreen with URL:", url);
-    navigation.navigate("YouTube Lessons", {
-      screen: "YouTubeLessonsScreen",
-      params: { url },
-    });
   };
 
   return (
@@ -160,11 +177,20 @@ const SearchScreen = ({ navigation, route }) => {
           {songData.spotify?.album_art && (
             <Image source={{ uri: songData.spotify.album_art }} style={styles.albumArt} />
           )}
-          <TouchableOpacity onPress={() => openInGuitarTabsScreen(songData.tabs)}>
-            <Text style={styles.link}>🎸 Guitar Tabs</Text>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={() => openInGuitarTabsScreen(songData.tabs)}
+          >
+            <Text style={styles.shareButtonText}>🎸 Guitar Tabs</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => openInYouTubeLessonsScreen(songData.youtube_lessons)}>
-            <Text style={styles.link}>📺 YouTube Lessons</Text>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={() => openInYouTubeLessonsScreen(songData.youtube_lessons)}
+          >
+            <Text style={styles.shareButtonText}>📺 YouTube Lessons</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+            <Text style={styles.shareButtonText}>📤 Share</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -237,11 +263,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginVertical: 10,
   },
-  link: {
+  shareButton: {
+    backgroundColor: "#34C759",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+  shareButtonText: {
     fontSize: 16,
-    color: "#007AFF",
-    marginVertical: 8,
-    textDecorationLine: "underline",
+    fontWeight: "500",
+    color: "white",
   },
 });
 
