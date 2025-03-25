@@ -16,7 +16,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-  Share, // Revert to using Share instead of Linking
+  Share, 
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
