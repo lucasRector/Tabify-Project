@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import SearchScreen from "./screens/SearchScreen";
+import ResultsScreen from "./screens/ResultsScreen";
 import HistoryScreen from "./screens/HistoryScreen";
 import GuitarTabsScreen from "./screens/GuitarTabsScreen";
 import YouTubeLessonsScreen from "./screens/YouTubeLessonsScreen";
@@ -14,7 +15,16 @@ const Stack = createStackNavigator();
 // Stack navigator for Search tab
 const SearchStack = () => (
   <Stack.Navigator>
-    <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ title: "Search" }} />
+    <Stack.Screen 
+      name="SearchScreen" 
+      component={SearchScreen} 
+      options={{ title: "Search" }} 
+    />
+    <Stack.Screen 
+      name="Results" 
+      component={ResultsScreen} 
+      options={{ title: "Results" }} 
+    />
   </Stack.Navigator>
 );
 
@@ -22,7 +32,7 @@ const SearchStack = () => (
 const GuitarTabsStack = () => (
   <Stack.Navigator>
     <Stack.Screen
-      name="GuitarTabsScreen" // Match the component name
+      name="GuitarTabsScreen"
       component={GuitarTabsScreen}
       options={{ title: "Guitar Tabs" }}
     />
@@ -33,9 +43,20 @@ const GuitarTabsStack = () => (
 const YouTubeLessonsStack = () => (
   <Stack.Navigator>
     <Stack.Screen
-      name="YouTubeLessonsScreen" // Match the component name
+      name="YouTubeLessonsScreen"
       component={YouTubeLessonsScreen}
       options={{ title: "YouTube Lessons" }}
+    />
+  </Stack.Navigator>
+);
+
+// Stack navigator for History
+const HistoryStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="HistoryScreen"
+      component={HistoryScreen}
+      options={{ title: "History" }}
     />
   </Stack.Navigator>
 );
@@ -60,16 +81,31 @@ const App = () => {
           },
           tabBarActiveTintColor: "#007AFF",
           tabBarInactiveTintColor: "gray",
+          // Hide the tab navigator's header to prevent double titles
+          headerShown: false,
         })}
       >
-        <Tab.Screen name="Search" component={SearchStack} options={{ title: "Search" }} />
-        <Tab.Screen name="Guitar Tabs" component={GuitarTabsStack} options={{ title: "Guitar Tabs" }} />
+        <Tab.Screen 
+          name="Search" 
+          component={SearchStack} 
+          // Remove the title here since it's set in the Stack.Screen
+          options={{ tabBarLabel: "Search" }} 
+        />
+        <Tab.Screen 
+          name="Guitar Tabs" 
+          component={GuitarTabsStack} 
+          options={{ tabBarLabel: "Guitar Tabs" }} 
+        />
         <Tab.Screen
           name="YouTube Lessons"
           component={YouTubeLessonsStack}
-          options={{ title: "YouTube Lessons" }}
+          options={{ tabBarLabel: "YouTube Lessons" }}
         />
-        <Tab.Screen name="History" component={HistoryScreen} options={{ title: "History" }} />
+        <Tab.Screen 
+          name="History" 
+          component={HistoryStack} 
+          options={{ tabBarLabel: "History" }} 
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

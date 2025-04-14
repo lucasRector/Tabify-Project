@@ -38,13 +38,11 @@ const SearchScreen = ({ navigation, route }) => {
       try {
         const savedHistory = await AsyncStorage.getItem("songHistory");
         if (savedHistory) setHistory(JSON.parse(savedHistory));
-        if (!songData) {
           await AsyncStorage.multiSet([
             ["currentGuitarTabsUrl", ""],
             ["currentYouTubeLessonsUrl", ""],
             ["hasActiveSearch", "false"],
           ]);
-        }
       } catch (error) {
         console.error("Error initializing app:", error);
       }
@@ -73,8 +71,15 @@ const SearchScreen = ({ navigation, route }) => {
       const response = await fetch(
         `${baseURL}/find-song?yt_url=${encodeURIComponent(youtubeURL)}`
       );
-      const data = await response.json();
-      setSongData(data);
+      let data;
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error("Invalid response format: Expected JSON");
+      }
+      if (data) {
+        setSongData(data);
+      }
       const timestamp = new Date().toISOString();
       const newHistory = [
         { song: data.song, artist: data.artist, tabs: data.tabs, youtube_lessons: data.youtube_lessons, spotify: data.spotify, youtubeURL, timestamp },
@@ -87,6 +92,8 @@ const SearchScreen = ({ navigation, route }) => {
         ["currentYouTubeLessonsUrl", data.youtube_lessons || ""],
         ["hasActiveSearch", "true"],
       ]);
+      navigation.navigate("Results", { songData: data });
+      setYoutubeURL(""); // Clear the input
     } catch (error) {
       console.error("Error fetching data:", error);
       Alert.alert("Error", "An error occurred while fetching the song data.");
@@ -126,7 +133,7 @@ const SearchScreen = ({ navigation, route }) => {
       Alert.alert("Permission Denied", "Microphone permission is required to record audio.");
       return;
     }
-
+  
     try {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
@@ -137,10 +144,31 @@ const SearchScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Failed to set audio mode.");
       return;
     }
-
+  
+    // 🔹 Initialize a new recording instance
     const newRecording = new Audio.Recording();
     try {
-      await newRecording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+      // ✅ Prepare the recording before starting
+      await newRecording.prepareToRecordAsync({
+        android: {
+          extension: ".mp3",
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          bitRate: 128000,
+          numberOfChannels: 2,
+        },
+        ios: {
+          extension: ".m4a",
+          outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
+          sampleRate: 44100,
+          numberOfChannels: 2,
+          bitRate: 128000,
+        }
+      });
+  
+      // 🔹 Start the recording after preparation
       await newRecording.startAsync();
       setRecording(newRecording);
       console.log("Recording started successfully");
@@ -179,11 +207,11 @@ const SearchScreen = ({ navigation, route }) => {
           });
           const data = await response.json();
           console.log("Backend response from /identify-audio:", data);
-          setSongData(data);
           const timestamp = new Date().toISOString();
           const newHistory = [{ ...data, timestamp, source: "audio" }, ...history];
           setHistory(newHistory);
           await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
+          navigation.navigate("Results", { songData: data });
         } catch (error) {
           console.error("Error identifying audio:", error);
           Alert.alert("Error", "Failed to identify song from audio: " + error.message);
@@ -198,51 +226,33 @@ const SearchScreen = ({ navigation, route }) => {
     }, 1000);
   };
 
-  const openInGuitarTabsScreen = (url) => (url ? navigation.navigate("Guitar Tabs", { screen: "GuitarTabsScreen", params: { url } }) : null);
-  const openInYouTubeLessonsScreen = (url) => (url ? navigation.navigate("YouTube Lessons", { screen: "YouTubeLessonsScreen", params: { url } }) : null);
-  const handleShare = async () => {
-    if (!songData) return;
-    const message = `Hey! I'm learning "${songData.song}" by ${songData.artist} on guitar using Tabify. Check out the album art: ${songData.spotify?.album_art || "No album art available"}!`;
-    try {
-      const result = await Share.share({ message });
-      if (result.action === Share.sharedAction) console.log("Song shared successfully!");
-    } catch (error) {
-      console.error("Error sharing song:", error);
-      Alert.alert("Error", "An error occurred while sharing.");
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Tabify Song Finder</Text>
-      <TextInput style={styles.input} placeholder="Enter YouTube URL" value={youtubeURL} onChangeText={setYoutubeURL} placeholderTextColor="#aaa" />
-      <TouchableOpacity style={styles.button} onPress={fetchSongData} disabled={loading}>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Enter YouTube URL" 
+        value={youtubeURL} 
+        onChangeText={setYoutubeURL} 
+        placeholderTextColor="#aaa" 
+      />
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={fetchSongData} 
+        disabled={loading}
+      >
         <Text style={styles.buttonText}>Find Song</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.button, recording && styles.recordingButton]}
         onPress={startRecordingAndCountdown}
-        disabled={recording !== null || loading} // Ensure this is a boolean
-      >
-        <Text style={styles.buttonText}>{recording ? `Recording (${countdown}s)` : "Record Audio"}</Text>
+        disabled={recording !== null || loading}
+        >
+          <Text style={styles.buttonText}>
+            {recording ? `Recording (${countdown}s)` : "Record Audio"}
+          </Text>
       </TouchableOpacity>
       {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
-      {songData && (
-        <View style={styles.songContainer}>
-          <Text style={styles.songTitle}>🎵 {songData.song}</Text>
-          <Text style={styles.artist}>Artist: {songData.artist}</Text>
-          {songData.spotify?.album_art && <Image source={{ uri: songData.spotify.album_art }} style={styles.albumArt} />}
-          <TouchableOpacity style={styles.shareButton} onPress={() => openInGuitarTabsScreen(songData.tabs)}>
-            <Text style={styles.shareButtonText}>🎸 Guitar Tabs</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton} onPress={() => openInYouTubeLessonsScreen(songData.youtube_lessons)}>
-            <Text style={styles.shareButtonText}>📺 YouTube Lessons</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-            <Text style={styles.shareButtonText}>📤 Share</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </ScrollView>
   );
 };
@@ -255,12 +265,6 @@ const styles = StyleSheet.create({
   recordingButton: { backgroundColor: "#FF3B30" },
   buttonText: { fontSize: 18, fontWeight: "500", color: "white" },
   loader: { marginVertical: 20 },
-  songContainer: { marginTop: 20, padding: 20, backgroundColor: "white", borderRadius: 15, alignItems: "center", width: "100%" },
-  songTitle: { fontSize: 22, fontWeight: "600", color: "#007AFF", textAlign: "center" },
-  artist: { fontSize: 16, color: "#555", marginVertical: 5 },
-  albumArt: { width: 220, height: 220, borderRadius: 12, marginVertical: 10 },
-  shareButton: { backgroundColor: "#34C759", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10, marginTop: 10, width: "100%", alignItems: "center" },
-  shareButtonText: { fontSize: 16, fontWeight: "500", color: "white" },
 });
 
 export default SearchScreen;

@@ -159,8 +159,8 @@ const HistoryScreen = ({ navigation }) => {
             toggleItemSelection(index);
           } else {
             navigation.navigate("Search", {
-              screen: "SearchScreen",
-              params: { youtubeURL: item.youtubeURL, autoSearch: true },
+              screen: "Results",
+              params: { songData: item },
             });
           }
         }}
