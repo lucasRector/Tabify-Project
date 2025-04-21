@@ -258,13 +258,48 @@ const SearchScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20, backgroundColor: "#FAFAFA" },
-  title: { fontSize: 28, fontWeight: "600", marginBottom: 20, color: "#222", textAlign: "center" },
-  input: { width: "100%", borderWidth: 1, borderColor: "#ddd", borderRadius: 12, padding: 12, fontSize: 16, backgroundColor: "white", marginBottom: 15 },
-  button: { backgroundColor: "#007AFF", paddingVertical: 12, borderRadius: 10, alignItems: "center", width: "100%", marginBottom: 15 },
-  recordingButton: { backgroundColor: "#FF3B30" },
-  buttonText: { fontSize: 18, fontWeight: "500", color: "white" },
-  loader: { marginVertical: 20 },
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#121212",
+    alignItems: "center",
+    padding: 20,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 30,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#1e1e1e",
+    color: "#fff",
+    padding: 14,
+    borderRadius: 12,
+    fontSize: 16,
+    marginBottom: 15,
+    borderColor: "#333",
+    borderWidth: 1,
+  },
+  button: {
+    backgroundColor: "#0A84FF",
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  recordingButton: {
+    backgroundColor: "#FF453A",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  loader: { marginVertical: 20 }
 });
+
 
 export default SearchScreen;

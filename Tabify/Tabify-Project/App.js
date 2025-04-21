@@ -1,71 +1,77 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
+
+// Screens
 import SearchScreen from "./screens/SearchScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import HistoryScreen from "./screens/HistoryScreen";
 import GuitarTabsScreen from "./screens/GuitarTabsScreen";
 import YouTubeLessonsScreen from "./screens/YouTubeLessonsScreen";
 
+// Theme colors
+const AppTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#2B2D42", // Deep Blue
+    card: "#1E1E2E",       // Slightly darker background for nav bar
+    text: "#FFFFFF",
+    border: "#2B2D42",
+    primary: "#EF233C",    // Accent
+  },
+};
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Stack navigator for Search tab
+// Stack for Search
 const SearchStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="SearchScreen" 
-      component={SearchScreen} 
-      options={{ title: "Search" }} 
-    />
-    <Stack.Screen 
-      name="Results" 
-      component={ResultsScreen} 
-      options={{ title: "Results" }} 
-    />
+  <Stack.Navigator
+    screenOptions={{
+      ...TransitionPresets.SlideFromRightIOS,
+      headerStyle: { backgroundColor: "#2B2D42" },
+      headerTintColor: "#FFFFFF",
+    }}
+  >
+    <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ title: "Search" }} />
+    <Stack.Screen name="Results" component={ResultsScreen} options={{ title: "Results" }} />
   </Stack.Navigator>
 );
 
-// Stack navigator for Guitar Tabs
+// Other Stacks (no transitions needed for single screens)
 const GuitarTabsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen
-      name="GuitarTabsScreen"
-      component={GuitarTabsScreen}
-      options={{ title: "Guitar Tabs" }}
-    />
+  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+    <Stack.Screen name="GuitarTabsScreen" component={GuitarTabsScreen} options={{ title: "Guitar Tabs" }} />
   </Stack.Navigator>
 );
 
-// Stack navigator for YouTube Lessons
 const YouTubeLessonsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen
-      name="YouTubeLessonsScreen"
-      component={YouTubeLessonsScreen}
-      options={{ title: "YouTube Lessons" }}
-    />
+  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+    <Stack.Screen name="YouTubeLessonsScreen" component={YouTubeLessonsScreen} options={{ title: "YouTube Lessons" }} />
   </Stack.Navigator>
 );
 
-// Stack navigator for History
 const HistoryStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen
-      name="HistoryScreen"
-      component={HistoryScreen}
-      options={{ title: "History" }}
-    />
+  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+    <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={{ title: "History" }} />
   </Stack.Navigator>
 );
 
 const App = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={AppTheme}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: "#1E1E2E",
+            borderTopColor: "#2B2D42",
+          },
+          tabBarActiveTintColor: "#EF233C",
+          tabBarInactiveTintColor: "gray",
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
             if (route.name === "Search") {
@@ -79,33 +85,12 @@ const App = () => {
             }
             return <Ionicons name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: "#007AFF",
-          tabBarInactiveTintColor: "gray",
-          // Hide the tab navigator's header to prevent double titles
-          headerShown: false,
         })}
       >
-        <Tab.Screen 
-          name="Search" 
-          component={SearchStack} 
-          // Remove the title here since it's set in the Stack.Screen
-          options={{ tabBarLabel: "Search" }} 
-        />
-        <Tab.Screen 
-          name="Guitar Tabs" 
-          component={GuitarTabsStack} 
-          options={{ tabBarLabel: "Guitar Tabs" }} 
-        />
-        <Tab.Screen
-          name="YouTube Lessons"
-          component={YouTubeLessonsStack}
-          options={{ tabBarLabel: "YouTube Lessons" }}
-        />
-        <Tab.Screen 
-          name="History" 
-          component={HistoryStack} 
-          options={{ tabBarLabel: "History" }} 
-        />
+        <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: "Search" }} />
+        <Tab.Screen name="Guitar Tabs" component={GuitarTabsStack} options={{ tabBarLabel: "Guitar Tabs" }} />
+        <Tab.Screen name="YouTube Lessons" component={YouTubeLessonsStack} options={{ tabBarLabel: "YouTube Lessons" }} />
+        <Tab.Screen name="History" component={HistoryStack} options={{ tabBarLabel: "History" }} />
       </Tab.Navigator>
     </NavigationContainer>
   );

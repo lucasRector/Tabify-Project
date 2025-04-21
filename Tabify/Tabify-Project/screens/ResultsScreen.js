@@ -32,12 +32,6 @@ const ResultsScreen = ({ navigation, route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.backButtonText}>← Back</Text>
-      </TouchableOpacity>
       <Text style={styles.title}>Search Results</Text>
       <View style={styles.songContainer}>
         <Text style={styles.songTitle}>🎵 {songData.song}</Text>
@@ -72,7 +66,7 @@ const styles = StyleSheet.create({
   container: { 
     flexGrow: 1, 
     paddingHorizontal: 20, 
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#121212", // Dark background
     paddingTop: 40 
   },
   backButton: {
@@ -83,20 +77,20 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 18,
-    color: "#007AFF",
+    color: "#007AFF", // Accent color for back button
     fontWeight: "500",
   },
   title: { 
     fontSize: 28, 
     fontWeight: "600", 
     marginBottom: 20, 
-    color: "#222", 
+    color: "#fff", // White text for title
     textAlign: "center" 
   },
   songContainer: { 
     marginTop: 20, 
     padding: 20, 
-    backgroundColor: "white", 
+    backgroundColor: "#333", // Dark card background
     borderRadius: 15, 
     alignItems: "center", 
     width: "100%" 
@@ -104,33 +98,33 @@ const styles = StyleSheet.create({
   songTitle: { 
     fontSize: 22, 
     fontWeight: "600", 
-    color: "#007AFF", 
+    color: "#007AFF", // Accent color for song title
     textAlign: "center" 
   },
   artist: { 
     fontSize: 16, 
-    color: "#555", 
-    marginVertical: 5 
-  },
-  albumArt: { 
-    width: 220, 
-    height: 220, 
-    borderRadius: 12, 
-    marginVertical: 10 
-  },
-  shareButton: { 
-    backgroundColor: "#34C759", 
-    paddingVertical: 10, 
-    paddingHorizontal: 20, 
-    borderRadius: 10, 
-    marginTop: 10, 
-    width: "100%", 
-    alignItems: "center" 
-  },
-  shareButtonText: { 
-    fontSize: 16, 
-    fontWeight: "500", 
-    color: "white" 
+     // Lighter text for artist name
+      marginVertical: 5 
+      },
+      albumArt: { 
+      width: 220, 
+      height: 220, 
+      borderRadius: 12, 
+      marginVertical: 10 
+      },
+      shareButton: { 
+      backgroundColor: "#007AFF", // Match the accent color used in other tabs
+      paddingVertical: 12, 
+      paddingHorizontal: 25, 
+      borderRadius: 8, 
+      marginTop: 10, 
+      width: "100%", 
+      alignItems: "center" 
+      },
+      shareButtonText: { 
+      fontSize: 16, 
+      fontWeight: "600", 
+      color: "#fff" // White text for buttons
   },
 });
 

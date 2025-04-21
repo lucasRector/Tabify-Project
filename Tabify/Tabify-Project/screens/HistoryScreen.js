@@ -26,7 +26,6 @@ const HistoryScreen = ({ navigation }) => {
           const parsedHistory = JSON.parse(savedHistory);
           setHistory(parsedHistory);
           setFilteredHistory(parsedHistory);
-          console.log("Loaded history:", parsedHistory);
         }
       } catch (error) {
         console.error("Error loading history:", error);
@@ -93,14 +92,9 @@ const HistoryScreen = ({ navigation }) => {
             setIsSelecting(false);
             setSelectedItems([]);
             try {
-              await AsyncStorage.setItem(
-                "songHistory",
-                JSON.stringify(newHistory)
-              );
-              console.log("Selected items deleted:", newHistory);
+              await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
             } catch (error) {
-              console.error("Error saving new history:", error);
-              Alert.alert("Error", "Failed to delete items. Please try again.");
+              Alert.alert("Error", "Failed to delete items.");
             }
           },
           style: "destructive",
@@ -124,10 +118,8 @@ const HistoryScreen = ({ navigation }) => {
               setFilteredHistory([]);
               setIsSelecting(false);
               setSelectedItems([]);
-              console.log("All history cleared.");
             } catch (error) {
-              console.error("Error clearing history:", error);
-              Alert.alert("Error", "Failed to clear history. Please try again.");
+              Alert.alert("Error", "Failed to clear history.");
             }
           },
           style: "destructive",
@@ -137,9 +129,7 @@ const HistoryScreen = ({ navigation }) => {
   };
 
   const renderItem = ({ item, index }) => {
-    const actualIndex = history.findIndex(
-      (h) => h.youtubeURL === item.youtubeURL
-    );
+    const actualIndex = history.findIndex((h) => h.youtubeURL === item.youtubeURL);
     const date = item.timestamp ? new Date(item.timestamp) : null;
     const formattedTimestamp = date
       ? `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
@@ -185,20 +175,11 @@ const HistoryScreen = ({ navigation }) => {
       <View style={styles.header}>
         {isSelecting ? (
           <>
-            <TouchableOpacity
-              style={styles.clearButton}
-              onPress={() => {
-                setIsSelecting(false);
-                setSelectedItems([]);
-              }}
-            >
-              <Text style={styles.clearButtonText}>Cancel</Text>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => toggleSelectionMode()}>
+              <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={deleteSelectedItems}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
+            <TouchableOpacity style={styles.deleteButton} onPress={deleteSelectedItems}>
+              <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -210,7 +191,7 @@ const HistoryScreen = ({ navigation }) => {
             >
               <Text
                 style={[
-                  styles.clearAllButtonText,
+                  styles.buttonText,
                   history.length === 0 && styles.disabledButtonText,
                 ]}
               >
@@ -224,7 +205,7 @@ const HistoryScreen = ({ navigation }) => {
             >
               <Text
                 style={[
-                  styles.selectButtonText,
+                  styles.buttonText,
                   history.length === 0 && styles.disabledButtonText,
                 ]}
               >
@@ -262,87 +243,69 @@ const HistoryScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#121212",
     padding: 20,
-    backgroundColor: "#FAFAFA",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 15,
   },
-  selectButton: {
-    backgroundColor: "#007AFF",
+  buttonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  cancelButton: {
+    backgroundColor: "#666",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 8,
-  },
-  selectButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    borderRadius: 10,
   },
   deleteButton: {
-    backgroundColor: "#FF3B30",
+    backgroundColor: "#FF453A",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 8,
-  },
-  deleteButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  clearButton: {
-    backgroundColor: "#FF9500",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-  },
-  clearButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    borderRadius: 10,
   },
   clearAllButton: {
-    backgroundColor: "#FF3B30",
+    backgroundColor: "#FF453A",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 8,
+    borderRadius: 10,
   },
-  clearAllButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+  selectButton: {
+    backgroundColor: "#0A84FF",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 10,
   },
   disabledButtonText: {
-    color: "#aaa",
+    color: "#777",
   },
   searchInput: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ddd",
+    backgroundColor: "#1e1e1e",
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
-    backgroundColor: "white",
+    color: "#fff",
+    borderColor: "#333",
+    borderWidth: 1,
     marginBottom: 15,
   },
   historyItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginBottom: 10,
-    backgroundColor: "white",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: "#1e1e1e",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderColor: "#2e2e2e",
+    borderWidth: 1,
   },
   selectedItem: {
-    backgroundColor: "#E6F0FF",
+    backgroundColor: "#0A84FF33",
+    borderColor: "#0A84FF",
   },
   albumArt: {
     width: 50,
@@ -356,11 +319,11 @@ const styles = StyleSheet.create({
   songName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#007AFF",
+    color: "#fff",
   },
   artist: {
     fontSize: 14,
-    color: "#555",
+    color: "#ccc",
   },
   timestamp: {
     fontSize: 12,
@@ -369,7 +332,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#888",
+    color: "#999",
     textAlign: "center",
     marginTop: 20,
   },

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList,  Platform,} from "react-native";
+import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
 import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -9,7 +9,7 @@ const YouTubeLessonsScreen = ({ route }) => {
   const [videoIds, setVideoIds] = useState([]);
   const [hasContent, setHasContent] = useState(false);
 
-  const BACKEND_URL =  Platform.OS === "ios" ? "http://localhost:8000" :"http://10.0.2.2:8000"; // Replace with your actual backend URL
+  const BACKEND_URL = Platform.OS === "ios" ? "http://localhost:8000" : "http://10.0.2.2:8000";
 
   useFocusEffect(
     useCallback(() => {
@@ -22,7 +22,6 @@ const YouTubeLessonsScreen = ({ route }) => {
 
           let songName, artistName;
 
-          // If songHistory exists, get the latest song and artist
           if (storedSongHistory) {
             const history = JSON.parse(storedSongHistory);
             if (history.length > 0) {
@@ -31,15 +30,9 @@ const YouTubeLessonsScreen = ({ route }) => {
             }
           }
 
-          console.log("AsyncStorage values:", {
-            hasActiveSearch,
-            storedUrl,
-            songName,
-            artistName,
-          });
+          console.log("AsyncStorage values:", { hasActiveSearch, storedUrl, songName, artistName });
 
           if (url && songName && artistName) {
-            // Direct navigation with URL and inferred song/artist from history
             await fetchVideosFromBackend(songName, artistName);
             await AsyncStorage.multiSet([
               ["currentYouTubeLessonsUrl", url],
@@ -50,7 +43,6 @@ const YouTubeLessonsScreen = ({ route }) => {
             setHasContent(true);
             console.log("Loaded videos from navigation with history:", { url, songName, artistName });
           } else if (hasActiveSearch === "true" && storedUrl && songName && artistName) {
-            // Tab navigation with stored data
             await fetchVideosFromBackend(songName, artistName);
             setHasContent(true);
             console.log("Loaded videos from AsyncStorage:", { storedUrl, songName, artistName });
@@ -88,16 +80,19 @@ const YouTubeLessonsScreen = ({ route }) => {
   };
 
   const renderVideo = ({ item }) => (
-    <WebView
-      source={{ uri: `https://www.youtube.com/embed/${item}?rel=0` }}
-      style={styles.video}
-      allowsFullscreenVideo
-      javaScriptEnabled
-      onError={(syntheticEvent) => {
-        const { nativeEvent } = syntheticEvent;
-        console.error("WebView error for video", item, ":", nativeEvent);
-      }}
-    />
+    <View style={styles.videoContainer}>
+      <Text style={styles.videoTitle}>YouTube Lesson</Text>
+      <WebView
+        source={{ uri: `https://www.youtube.com/embed/${item}?rel=0` }}
+        style={styles.video}
+        allowsFullscreenVideo
+        javaScriptEnabled
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.error("WebView error for video", item, ":", nativeEvent);
+        }}
+      />
+    </View>
   );
 
   if (!hasContent || videoIds.length === 0) {
@@ -124,30 +119,44 @@ const YouTubeLessonsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#121212",
     paddingHorizontal: 10,
+    paddingBottom: 20,
+  },
+  videoContainer: {
+    backgroundColor: "#1E1E1E",
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#0A84FF",
+    marginVertical: 16,
+    padding: 10,
+  },
+  videoTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 8,
   },
   video: {
     height: 200,
-    marginVertical: 10,
-    borderRadius: 8,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#121212",
     padding: 20,
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#222",
+    color: "#FFFFFF",
     marginBottom: 10,
   },
   emptyMessage: {
     fontSize: 16,
-    color: "#555",
+    color: "#AAAAAA",
     textAlign: "center",
     lineHeight: 22,
   },
