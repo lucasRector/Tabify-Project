@@ -79,9 +79,9 @@ const YouTubeLessonsScreen = ({ route }) => {
     }
   };
 
-  const renderVideo = ({ item }) => (
+  const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
-      <Text style={styles.videoTitle}>YouTube Lesson</Text>
+      <Text style={styles.videoTitle}>YouTube Lesson #{index + 1}</Text>
       <WebView
         source={{ uri: `https://www.youtube.com/embed/${item}?rel=0` }}
         style={styles.video}
