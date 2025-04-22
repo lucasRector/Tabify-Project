@@ -135,20 +135,24 @@ const SearchScreen = ({ navigation, route }) => {
     }
   
     try {
+      // Configure audio mode
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
+        allowsRecordingAndroid: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
+      console.log("Audio mode configured successfully");
     } catch (error) {
       console.error("Error setting audio mode:", error);
-      Alert.alert("Error", "Failed to set audio mode.");
+      Alert.alert("Error", "Failed to set audio mode: " + error.message);
       return;
     }
   
-    // 🔹 Initialize a new recording instance
+    // Initialize recording
     const newRecording = new Audio.Recording();
     try {
-      // ✅ Prepare the recording before starting
       await newRecording.prepareToRecordAsync({
         android: {
           extension: ".mp3",
@@ -159,71 +163,87 @@ const SearchScreen = ({ navigation, route }) => {
           numberOfChannels: 2,
         },
         ios: {
-          extension: ".m4a",
+          extension: ".mp3", // Changed to .mp3 for consistency with backend
           outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
           audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
           sampleRate: 44100,
           numberOfChannels: 2,
           bitRate: 128000,
-        }
+        },
       });
   
-      // 🔹 Start the recording after preparation
+      // Start recording
       await newRecording.startAsync();
       setRecording(newRecording);
       console.log("Recording started successfully");
-    } catch (error) {
-      console.error("Recording start error:", error);
-      Alert.alert("Error", "Failed to start recording: " + error.message);
-      return;
-    }
-
-    setCountdown(10);
-
-    let count = 10;
-    const countdownInterval = setInterval(async () => {
-      count--;
-      setCountdown(count);
-
-      if (count === 5) {
-        try {
-          await newRecording.stopAndUnloadAsync();
-          console.log("Recording stopped");
-          const uri = newRecording.getURI();
-          console.log("Recording URI:", uri);
-          setRecording(null);
-
-          const formData = new FormData();
-          formData.append("file", {
-            uri,
-            type: Platform.OS === "ios" ? "audio/x-m4a" : Platform.OS === "android" ? "audio/mpeg" : "audio/wav",
-            name: `recording.${Platform.OS === "ios" ? "m4a" : Platform.OS === "android" ? "mp3" : "wav"}`,
-          });
-          
-          const response = await fetch(`${baseURL}/identify-audio`, {
-            method: "POST",
-            body: formData,
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          const data = await response.json();
-          console.log("Backend response from /identify-audio:", data);
-          const timestamp = new Date().toISOString();
-          const newHistory = [{ ...data, timestamp, source: "audio" }, ...history];
-          setHistory(newHistory);
-          await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
-          navigation.navigate("Results", { songData: data });
-        } catch (error) {
-          console.error("Error identifying audio:", error);
-          Alert.alert("Error", "Failed to identify song from audio: " + error.message);
+  
+      // Set countdown for 10 seconds
+      setCountdown(10);
+      let count = 10;
+  
+      const countdownInterval = setInterval(async () => {
+        count--;
+        setCountdown(count);
+  
+        if (count === 0) {
+          clearInterval(countdownInterval);
+          try {
+            // Stop and unload recording
+            await newRecording.stopAndUnloadAsync();
+            const uri = newRecording.getURI();
+            console.log("Recording stopped, URI:", uri);
+  
+            // Prepare FormData for upload
+            const formData = new FormData();
+            formData.append("file", {
+              uri,
+              type: "audio/mpeg", // Use .mp3 for both platforms
+              name: "recording.mp3",
+            });
+  
+            // Upload to backend
+            const response = await fetch(`${baseURL}/identify-audio`, {
+              method: "POST",
+              body: formData,
+              // Remove explicit Content-Type to let fetch handle boundary
+            });
+  
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+  
+            const data = await response.json();
+            console.log("Backend response from /identify-audio:", data);
+  
+            // Update history
+            const timestamp = new Date().toISOString();
+            const newHistory = [{ ...data, timestamp, source: "audio" }, ...history];
+            setHistory(newHistory);
+            await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
+  
+            // Navigate to results
+            navigation.navigate("Results", { songData: data });
+          } catch (error) {
+            console.error("Error processing recording:", error);
+            Alert.alert("Error", "Failed to identify song from audio: " + error.message);
+          } finally {
+            setRecording(null);
+            setCountdown(null);
+          }
         }
+      }, 1000);
+    } catch (error) {
+      console.error("Recording setup error:", error);
+      Alert.alert("Error", "Failed to start recording: " + error.message);
+      setRecording(null);
+      setCountdown(null);
+      // Attempt to unload recording in case of partial setup
+      try {
+        await newRecording.stopAndUnloadAsync();
+      } catch (e) {
+        console.warn("Failed to unload recording:", e);
       }
-
-      if (count === 0) {
-        clearInterval(countdownInterval);
-        setRecording(null);
-        setCountdown(null);
-      }
-    }, 1000);
+    }
   };
 
   return (

@@ -12,53 +12,120 @@ const GuitarTabsScreen = ({ route }) => {
   const [canGoForward, setCanGoForward] = useState(false);
   const webViewRef = useRef(null);
 
-  // JavaScript to block pop-ups and premium elements
+  // JavaScript to block pop-ups and Songsterr-specific elements
+  
   const blockAdsScript = `
-    (function() {
-      // Block pop-ups
-      window.open = function(url) { return null; };
-      window.confirm = function() { return true; };
-      window.alert = function() { return; };
-
-      // Hide premium locked content and "Open In App"
-      const hideElements = () => {
-        const allElements = document.querySelectorAll('*');
-        allElements.forEach(el => {
-          const href = el.getAttribute('href') || '';
-          if (href.includes('play.google.com') || href.includes('apps.apple.com') || href.includes('ultimate-guitar')) {
-            let parent = el;
-            for (let i = 0; i < 5 && parent && parent.parentNode; i++) {
-              parent = parent.parentNode;
-              if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') break;
-            }
-            if (parent) {
-              parent.style.display = 'none !important';
-            } else {
-              el.style.display = 'none !important';
-            }
-          }
-          const textContent = el.innerText || el.textContent || '';
-          if (textContent.trim() === 'OPEN IN APP') {
-            let parent = el;
-            for (let i = 0; i < 5 && parent && parent.parentNode; i++) {
-              parent = parent.parentNode;
-              if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') break;
-            }
-            if (parent) {
-              parent.style.display = 'none !important';
-            } else {
-              el.style.display = 'none !important';
-            }
-          }
-        });
-      };
-      hideElements();
-
-      const observer = new MutationObserver(hideElements);
-      observer.observe(document.body, { childList: true, subtree: true });
-      setInterval(hideElements, 1000);
-    })();
+  (function() {
+    // Utility to hide an element
+    const hideElement = (el) => {
+      if (el) {
+        el.setAttribute('style', 'display: none !important; visibility: hidden !important;');
+      }
+    };
+  
+    // Main function to block ads and pop-ups
+    const blockAdsAndPopups = () => {
+      // 1. Target known ad-related elements by href, text, or attributes
+      const selectors = [
+        'a[href*="play.google.com"]',
+        'a[href*="apps.apple.com"]',
+        'a[href*="/premium"]',
+        '[class*="ad" i]',
+        '[class*="banner" i]',
+        '[class*="promo" i]',
+        '[id*="ad" i]',
+        '[id*="premium" i]',
+        '[data-ad]',
+        '[data-track*="ad"]',
+        'div:contains("Get Songsterr Plus")',
+        'div:contains("Open in app")',
+        'div:contains("Try Songsterr Plus")',
+        'button:contains("Upgrade")',
+      ];
+  
+      selectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach(hideElement);
+      });
+  
+      // 2. Target fixed-position elements (pop-ups, modals, banners)
+      document.querySelectorAll('div, section, aside, img').forEach((el) => {
+        const style = window.getComputedStyle(el);
+        if (
+          (style.position === 'fixed' || style.position === 'sticky') &&
+          (style.zIndex > 100 || style.bottom === '0px' || style.top === '0px')
+        ) {
+          hideElement(el);
+        }
+      });
+  
+      // 3. Target modal overlays (high z-index, centered)
+      document.querySelectorAll('div').forEach((el) => {
+        const style = window.getComputedStyle(el);
+        if (
+          style.zIndex > 1000 &&
+          (style.position === 'fixed' || style.position === 'absolute') &&
+          style.backgroundColor !== 'transparent'
+        ) {
+          hideElement(el);
+        }
+      });
+  
+      // 4. Remove inline styles or classes that show ads
+      document.querySelectorAll('[class*="show-ad" i], [class*="visible" i]').forEach((el) => {
+        el.classList.remove('show-ad', 'visible');
+        hideElement(el);
+      });
+  
+      // 5. Block pop-up windows and alerts
+      window.open = function() { return null; };
+      window.alert = function() { return null; };
+      window.prompt = function() { return null; };
+    };
+  
+    // Run immediately
+    blockAdsAndPopups();
+  
+    // Observe DOM changes for dynamic content
+    const observer = new MutationObserver((mutations) => {
+      blockAdsAndPopups();
+    });
+  
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+    });
+  
+    // Run periodically for late-loaded content
+    const intervalId = setInterval(blockAdsAndPopups, 2000);
+  
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+      observer.disconnect();
+      clearInterval(intervalId);
+    });
+  })();
   `;
+
+  const injectedCss = `
+  [class*="ad" i], [class*="banner" i], [class*="promo" i], [id*="ad" i], [id*="premium" i] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  div[style*="position: fixed"], div[style*="z-index: 1000"] {
+    display: none !important;
+  }
+`;
+  const injectedJavaScript = `
+  (function() {
+    const style = document.createElement('style');
+    style.textContent = ${JSON.stringify(injectedCss)};
+    document.head.appendChild(style);
+    ${blockAdsScript} // Existing script
+  })();
+`;
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -114,11 +181,11 @@ const GuitarTabsScreen = ({ route }) => {
   };
 
   const handleShouldStartLoadWithRequest = (request) => {
-    if (request.url.includes('ultimate-guitar://')) {
+    if (request.url.includes('songsterr://')) {
       console.log("Blocked navigation to app URL:", request.url);
-      return false; 
+      return false;
     }
-    return true; 
+    return true;
   };
 
   if (!hasContent) {
@@ -143,7 +210,7 @@ const GuitarTabsScreen = ({ route }) => {
           console.error("WebView error in GuitarTabsScreen:", nativeEvent);
         }}
         onNavigationStateChange={handleNavigationStateChange}
-        injectedJavaScript={blockAdsScript}
+        injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         userAgent="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
