@@ -17,6 +17,7 @@
     "axios": "^1.7.9",
     "expo": "~52.0.26",
     "expo-av": "~15.0.2",
+    "expo-file-system": "^18.0.12",
     "expo-status-bar": "~2.0.1",
     "myapp": "file:",
     "react": "18.3.1",

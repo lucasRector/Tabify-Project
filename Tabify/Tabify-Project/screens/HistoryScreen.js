@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   clearAllButton: {
-    backgroundColor: "#FF453A",
+    backgroundColor: "#CC5500",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 10,

@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 18,
-    color: "#007AFF", // Accent color for back button
+    color: "#0A84FF", // Accent color for back button
     fontWeight: "500",
   },
   title: { 
@@ -98,12 +98,13 @@ const styles = StyleSheet.create({
   songTitle: { 
     fontSize: 22, 
     fontWeight: "600", 
-    color: "#007AFF", // Accent color for song title
+    color:"#0A84FF", // Accent color for song title
     textAlign: "center" 
   },
   artist: { 
     fontSize: 16, 
      // Lighter text for artist name
+      color: "#fff",
       marginVertical: 5 
       },
       albumArt: { 
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
       marginVertical: 10 
       },
       shareButton: { 
-      backgroundColor: "#007AFF", // Match the accent color used in other tabs
+      backgroundColor: "#0A84FF", // Match the accent color used in other tabs
       paddingVertical: 12, 
       paddingHorizontal: 25, 
       borderRadius: 8, 

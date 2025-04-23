@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 // Screens
 import SearchScreen from "./screens/SearchScreen";
@@ -27,13 +28,19 @@ const AppTheme = {
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Stack for Search
 const SearchStack = () => (
   <Stack.Navigator
     screenOptions={{
       ...TransitionPresets.SlideFromRightIOS,
       headerStyle: { backgroundColor: "#2B2D42" },
       headerTintColor: "#FFFFFF",
+      headerTitle: (props) => (
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>{props.children}</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
+          <Text style={styles.tabify}>Tabify</Text>
+        </View>
+      ),
     }}
   >
     <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ title: "Search" }} />
@@ -41,21 +48,56 @@ const SearchStack = () => (
   </Stack.Navigator>
 );
 
-// Other Stacks (no transitions needed for single screens)
 const GuitarTabsStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: { backgroundColor: "#2B2D42" },
+      headerTintColor: "#FFFFFF",
+      headerTitle: (props) => (
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>{props.children}</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
+          <Text style={styles.tabify}>Tabify</Text>
+        </View>
+      ),
+    }}
+  >
     <Stack.Screen name="GuitarTabsScreen" component={GuitarTabsScreen} options={{ title: "Guitar Tabs" }} />
   </Stack.Navigator>
 );
 
 const YouTubeLessonsStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: { backgroundColor: "#2B2D42" },
+      headerTintColor: "#FFFFFF",
+      headerTitle: (props) => (
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>{props.children}</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
+          <Text style={styles.tabify}>Tabify</Text>
+        </View>
+      ),
+    }}
+  >
     <Stack.Screen name="YouTubeLessonsScreen" component={YouTubeLessonsScreen} options={{ title: "YouTube Lessons" }} />
   </Stack.Navigator>
 );
 
 const HistoryStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#2B2D42" }, headerTintColor: "#FFFFFF" }}>
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: { backgroundColor: "#2B2D42" },
+      headerTintColor: "#FFFFFF",
+      headerTitle: (props) => (
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>{props.children}</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
+          <Text style={styles.tabify}>Tabify</Text>
+        </View>
+      ),
+    }}
+  >
     <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={{ title: "History" }} />
   </Stack.Navigator>
 );
@@ -70,21 +112,26 @@ const App = () => {
             backgroundColor: "#1E1E2E",
             borderTopColor: "#2B2D42",
           },
-          tabBarActiveTintColor: "#EF233C",
-          tabBarInactiveTintColor: "gray",
+          tabBarActiveTintColor: "gray",
+          tabBarInactiveTintColor: "white",
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
             if (route.name === "Search") {
               iconName = focused ? "search" : "search-outline";
+              color = focused ? "#004D99" : "#0A84FF";
             } else if (route.name === "History") {
               iconName = focused ? "time" : "time-outline";
+              color = focused ? "#004D99" : "#0A84FF";
             } else if (route.name === "Guitar Tabs") {
               iconName = focused ? "musical-notes" : "musical-notes-outline";
+              color = focused ? "#004D99" : "#0A84FF";
             } else if (route.name === "YouTube Lessons") {
               iconName = focused ? "logo-youtube" : "logo-youtube";
+              color = focused ? "#004D99" : "#0A84FF";
             }
             return <Ionicons name={iconName} size={size} color={color} />;
           },
+          
         })}
       >
         <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: "Search" }} />
@@ -95,5 +142,30 @@ const App = () => {
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  title: {
+    fontSize: 20,
+    color: "#FFFFFF",
+    flex: 1, // Keeps it aligned left
+  },
+  logo: {
+    width: 50, // Increased size for better visibility
+    height: 50,
+    resizeMode: "contain",
+    flex: 3, // Keeps it aligned center
+  },
+  tabify: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#3399FF",
+  },
+});
 
 export default App;

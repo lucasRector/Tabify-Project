@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   recordingButton: {
-    backgroundColor: "#FF453A",
+    backgroundColor: "#003366",
   },
   buttonText: {
     color: "#fff",

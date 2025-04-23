@@ -109,7 +109,7 @@ const GuitarTabsScreen = ({ route }) => {
   `;
 
   const injectedCss = `
-  [class*="ad" i], [class*="banner" i], [class*="promo" i], [id*="ad" i], [id*="premium" i] {
+  [class*="ad" i], [class*="banner" i], [class*="promo" i], [id*="ad" i], [id*="premium" i] [id*="tabList" i]{
     display: none !important;
     visibility: hidden !important;
   }
@@ -220,24 +220,21 @@ const GuitarTabsScreen = ({ route }) => {
       />
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={[styles.navButton, !canGoBack && styles.disabledButton]}
           onPress={handleGoBack}
           disabled={!canGoBack}
         >
-          <Text style={styles.buttonText}>Back</Text>
+          <Text style={[styles.buttonText, !canGoBack && styles.disabledButton]}>◀</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.navButton}
           onPress={handleGoHome}
         >
-          <Text style={styles.buttonText}>Home</Text>
+          <Text style={styles.buttonText}>⌂</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.navButton, !canGoForward && styles.disabledButton]}
           onPress={handleGoForward}
           disabled={!canGoForward}
         >
-          <Text style={styles.buttonText}>Forward</Text>
+          <Text style={[styles.buttonText, !canGoForward && styles.disabledButton]}>▶</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -283,12 +280,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   disabledButton: {
-    backgroundColor: "#888",
+    color: "#004D99",
     opacity: 0.6,
   },
   buttonText: {
-    color: "#FFF",
-    fontSize: 16,
+    color: "#0A84FF",
+    fontSize: 25,
     fontWeight: "500",
   },
 });
