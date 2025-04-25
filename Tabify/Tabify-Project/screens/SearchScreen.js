@@ -24,7 +24,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
 
-const baseURL = Platform.OS === "ios" ? "http://localhost:8000" :"http://10.0.2.2:8000";
+const API_URL = "https://web-production-7ba9.up.railway.app";
+const baseURL = `${API_URL}`;
 const SearchScreen = ({ navigation, route }) => {
   const [youtubeURL, setYoutubeURL] = useState(route.params?.youtubeURL || "");
   const [songData, setSongData] = useState(route.params?.songData || null);
