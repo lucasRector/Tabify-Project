@@ -36,15 +36,14 @@ const SearchStack = () => (
       headerTintColor: "#FFFFFF",
       headerTitle: (props) => (
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>{props.children}</Text>
-          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
           <Text style={styles.tabify}>Tabify</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
         </View>
       ),
     }}
   >
-    <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ title: "Search" }} />
-    <Stack.Screen name="Results" component={ResultsScreen} options={{ title: "Results" }} />
+    <Stack.Screen name="SearchScreen" component={SearchScreen}/>
+    <Stack.Screen name="Results" component={ResultsScreen}/>
   </Stack.Navigator>
 );
 
@@ -55,14 +54,13 @@ const GuitarTabsStack = () => (
       headerTintColor: "#FFFFFF",
       headerTitle: (props) => (
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>{props.children}</Text>
-          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
           <Text style={styles.tabify}>Tabify</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
         </View>
       ),
     }}
   >
-    <Stack.Screen name="GuitarTabsScreen" component={GuitarTabsScreen} options={{ title: "Guitar Tabs" }} />
+    <Stack.Screen name="GuitarTabsScreen" component={GuitarTabsScreen}/>
   </Stack.Navigator>
 );
 
@@ -73,14 +71,13 @@ const YouTubeLessonsStack = () => (
       headerTintColor: "#FFFFFF",
       headerTitle: (props) => (
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>{props.children}</Text>
-          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
           <Text style={styles.tabify}>Tabify</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
         </View>
       ),
     }}
   >
-    <Stack.Screen name="YouTubeLessonsScreen" component={YouTubeLessonsScreen} options={{ title: "YouTube Lessons" }} />
+    <Stack.Screen name="YouTubeLessonsScreen" component={YouTubeLessonsScreen}/>
   </Stack.Navigator>
 );
 
@@ -91,14 +88,13 @@ const HistoryStack = () => (
       headerTintColor: "#FFFFFF",
       headerTitle: (props) => (
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>{props.children}</Text>
-          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
           <Text style={styles.tabify}>Tabify</Text>
+          <Image source={require("./assets/tabify-logo.png")} style={styles.logo} />
         </View>
       ),
     }}
   >
-    <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={{ title: "History" }} />
+    <Stack.Screen name="HistoryScreen" component={HistoryScreen}/>
   </Stack.Navigator>
 );
 
@@ -150,21 +146,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
   },
-  title: {
-    fontSize: 20,
-    color: "#FFFFFF",
-    flex: 1, // Keeps it aligned left
-  },
   logo: {
     width: 50, // Increased size for better visibility
     height: 50,
-    resizeMode: "contain",
-    flex: 3, // Keeps it aligned center
+    borderRadius: 25, // Make it circular
   },
   tabify: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "bold",
     color: "#3399FF",
+    flex:5,
+    textAlign: "center",
+    marginLeft: 50,
+    marginRight: 10,
   },
 });
 
