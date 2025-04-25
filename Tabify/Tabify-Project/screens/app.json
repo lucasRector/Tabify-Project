@@ -17,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/tabify-logo.png",
-        "backgroundColor": "#7a7a7a"
+        "backgroundColor": "#f7f7f7"
       },
       "permissions": [
         "RECORD_AUDIO"
