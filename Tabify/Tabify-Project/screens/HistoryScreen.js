@@ -8,6 +8,8 @@ import {
   TextInput,
   Alert,
   Image,
+  Platform,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -34,20 +36,6 @@ const HistoryScreen = ({ navigation }) => {
     loadHistory();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredHistory(history);
-    } else {
-      const filtered = history.filter(
-        (item) =>
-          item.song.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.artist.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredHistory(filtered);
-    }
-    setSelectedItems([]);
-  }, [searchQuery, history]);
-
   const toggleSelectionMode = () => {
     setIsSelecting(!isSelecting);
     setSelectedItems([]);
@@ -65,71 +53,36 @@ const HistoryScreen = ({ navigation }) => {
   };
 
   const deleteSelectedItems = async () => {
-    if (selectedItems.length === 0) {
-      Alert.alert("No Items Selected", "Please select items to delete.");
-      return;
-    }
+    if (selectedItems.length === 0) return;
 
-    Alert.alert(
-      "Delete Selected",
-      `Are you sure you want to delete ${selectedItems.length} item(s)?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          onPress: async () => {
-            const newHistory = history.filter(
-              (_, i) => !selectedItems.includes(i)
-            );
-            setHistory(newHistory);
-            setFilteredHistory(
-              newHistory.filter(
-                (item) =>
-                  item.song.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.artist.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-            );
-            setIsSelecting(false);
-            setSelectedItems([]);
-            try {
-              await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete items.");
-            }
-          },
-          style: "destructive",
-        },
-      ]
-    );
+    const newHistory = history.filter((_, i) => !selectedItems.includes(i));
+    try {
+      await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
+      setHistory(newHistory);
+      setFilteredHistory(newHistory);
+      setIsSelecting(false);
+      setSelectedItems([]);
+    } catch (error) {
+      console.error("Error deleting items:", error);
+    }
   };
 
   const clearAllHistory = async () => {
-    Alert.alert(
-      "Clear All History",
-      "Are you sure you want to clear your entire search history?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem("songHistory");
-              setHistory([]);
-              setFilteredHistory([]);
-              setIsSelecting(false);
-              setSelectedItems([]);
-            } catch (error) {
-              Alert.alert("Error", "Failed to clear history.");
-            }
-          },
-          style: "destructive",
-        },
-      ]
-    );
+    try {
+      await AsyncStorage.removeItem("songHistory");
+      setHistory([]);
+      setFilteredHistory([]);
+      setIsSelecting(false);
+      setSelectedItems([]);
+    } catch (error) {
+      console.error("Error clearing history:", error);
+    }
   };
 
   const renderItem = ({ item, index }) => {
-    const actualIndex = history.findIndex((h) => h.youtubeURL === item.youtubeURL);
+    const actualIndex = history.findIndex(
+      (h) => h.youtubeURL === item.youtubeURL
+    );
     const date = item.timestamp ? new Date(item.timestamp) : null;
     const formattedTimestamp = date
       ? `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
@@ -175,7 +128,7 @@ const HistoryScreen = ({ navigation }) => {
       <View style={styles.header}>
         {isSelecting ? (
           <>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => toggleSelectionMode()}>
+            <TouchableOpacity style={styles.actionButton} onPress={toggleSelectionMode}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteButton} onPress={deleteSelectedItems}>
@@ -184,33 +137,11 @@ const HistoryScreen = ({ navigation }) => {
           </>
         ) : (
           <>
-            <TouchableOpacity
-              style={styles.clearAllButton}
-              onPress={history.length > 0 ? clearAllHistory : null}
-              disabled={history.length === 0}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  history.length === 0 && styles.disabledButtonText,
-                ]}
-              >
-                Clear All
-              </Text>
+            <TouchableOpacity style={styles.clearAllButton} onPress={clearAllHistory}>
+              <Text style={styles.buttonText}>Clear All</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.selectButton}
-              onPress={history.length > 0 ? toggleSelectionMode : null}
-              disabled={history.length === 0}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  history.length === 0 && styles.disabledButtonText,
-                ]}
-              >
-                Select
-              </Text>
+            <TouchableOpacity style={styles.actionButton} onPress={toggleSelectionMode}>
+              <Text style={styles.buttonText}>Select</Text>
             </TouchableOpacity>
           </>
         )}
@@ -219,9 +150,9 @@ const HistoryScreen = ({ navigation }) => {
       <TextInput
         style={styles.searchInput}
         placeholder="Search history..."
+        placeholderTextColor="#aaa"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholderTextColor="#aaa"
       />
 
       {filteredHistory.length > 0 ? (
@@ -229,7 +160,8 @@ const HistoryScreen = ({ navigation }) => {
           data={filteredHistory}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 30 }}
+          showsVerticalScrollIndicator={false} // ✅ Hides scrollbar nicely
         />
       ) : (
         <Text style={styles.emptyText}>
@@ -239,11 +171,10 @@ const HistoryScreen = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: "#2B2D42",
     padding: 20,
   },
   header: {
@@ -336,6 +267,108 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
+  actionButton: {
+    backgroundColor: "#0A84FF",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });
+
+if (Platform.OS === "web") {
+  const { width } = Dimensions.get("window");
+  const isWideScreen = width > 600;
+
+  styles.container = {
+    ...styles.container,
+    width: isWideScreen ? "75%" : "100%",
+    margin: "auto",
+    alignItems: isWideScreen ? "center" : "stretch",
+  };
+  styles.historyItem = {
+    ...styles.historyItem,
+    width: "100%",
+    padding: isWideScreen ? 20 : 14,
+    marginBottom: isWideScreen ? 20 : 12,
+    borderRadius: isWideScreen ? 20 : 14,
+  };
+  styles.albumArt = {
+    ...styles.albumArt,
+    width: isWideScreen ? 70 : 50,
+    height: isWideScreen ? 70 : 50,
+    borderRadius: isWideScreen ? 12 : 8,
+    marginRight: isWideScreen ? 20 : 15,
+  };
+  styles.songInfo = {
+    ...styles.songInfo,
+    width: "100%",
+  };
+  styles.songName = {
+    ...styles.songName,
+    fontSize: isWideScreen ? 20 : 16,
+  };
+  styles.artist = {
+    ...styles.artist,
+    fontSize: isWideScreen ? 18 : 14,
+  };
+  styles.timestamp = {
+    ...styles.timestamp,
+    fontSize: isWideScreen ? 14 : 12,
+  };
+  styles.searchInput = {
+    ...styles.searchInput,
+    width: isWideScreen ? "80%" : "100%",
+    fontSize: isWideScreen ? 18 : 16,
+  };
+  styles.buttonText = {
+    ...styles.buttonText,
+    fontSize: isWideScreen ? 18 : 15,
+  };
+  styles.cancelButton = {
+    ...styles.cancelButton,
+    width: isWideScreen ? "40%" : "48%",
+  };
+  styles.deleteButton = {
+    ...styles.deleteButton,
+    width: isWideScreen ? "40%" : "48%",
+  };
+  styles.clearAllButton = {
+    ...styles.clearAllButton,
+    width: isWideScreen ? "40%" : "48%",
+  };
+  styles.selectButton = {
+    ...styles.selectButton,
+    width: isWideScreen ? "40%" : "48%",
+  };
+  styles.disabledButtonText = {
+    ...styles.disabledButtonText,
+    fontSize: isWideScreen ? 18 : 15,
+  };
+  styles.emptyText = {
+    ...styles.emptyText,
+    fontSize: isWideScreen ? 18 : 16,
+  };
+  styles.header = {
+    ...styles.header,
+    width: isWideScreen ? "80%" : "100%",
+    flexDirection: isWideScreen ? "row" : "column",
+    alignItems: isWideScreen ? "center" : "stretch",
+    justifyContent: isWideScreen ? "space-between" : "center",
+  };
+  styles.actionButton = {
+    ...styles.actionButton,
+    width: isWideScreen ? "40%" : "48%",
+    marginBottom: isWideScreen ? 0 : 10,
+  };
+  styles.actionButtonText = {
+    ...styles.actionButtonText,
+    fontSize: isWideScreen ? 18 : 15,
+  };
+}
 
 export default HistoryScreen;

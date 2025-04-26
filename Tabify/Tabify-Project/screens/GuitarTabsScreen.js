@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -201,6 +201,15 @@ const GuitarTabsScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.container}>
+      {Platform.OS === "web" ? (
+         <View style={styles.webContainer}>
+         <Text style={styles.text}>Guitar tabs can't be embedded directly.</Text>
+         <TouchableOpacity style={styles.openButton} onPress={() => window.open(displayUrl, '_blank')}>
+           <Text style={styles.buttonText}>Open Guitar Tabs</Text>
+         </TouchableOpacity>
+       </View>
+      ) : (
       <WebView
         ref={webViewRef}
         source={{ uri: displayUrl }}
@@ -217,7 +226,11 @@ const GuitarTabsScreen = ({ route }) => {
         onMessage={(event) => {
           console.log("WebView message:", event.nativeEvent.data);
         }}
-      />
+        domStorageEnabled={true}
+        allowsFullscreenVideo={true}
+        />
+      )}
+    </View>
       <View style={styles.bottomBar}>
         <TouchableOpacity
           onPress={handleGoBack}
@@ -244,6 +257,7 @@ const GuitarTabsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#2B2D42",
   },
   emptyContainer: {
     flex: 1,
@@ -289,5 +303,16 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+if (Platform.OS === "web") {
+  styles.webContainer = {
+    flex: 1,
+    backgroundColor: "#2b2d42",
+    justifyContent: "center",
+    alignItems: "center",
+  };
+  styles.bottomBar = {
+    display: "none",
+  };
+}
 
 export default GuitarTabsScreen;

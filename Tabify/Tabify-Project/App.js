@@ -2,8 +2,8 @@ import React from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, StyleSheet,Platform } from "react-native";
 
 // Screens
 import SearchScreen from "./screens/SearchScreen";
@@ -99,8 +99,37 @@ const HistoryStack = () => (
 );
 
 const App = () => {
+  const linking = {
+    prefixes: ['http://localhost:8081'],
+    config: {
+      screens: {
+        Search: {
+          screens: {
+            Search: '',
+            Results: 'results',
+          }
+        },
+        'Guitar Tabs': {
+          screens: {
+            GuitarTabs: 'guitar-tabs',
+          }
+        },
+        'YouTube Lessons': {
+          screens: {
+            YouTubeLessons: 'youtube-lessons',
+          }
+        },
+        History: {
+          screens: {
+            History: 'history',
+          }
+        }
+      }
+    }
+  };
+  
   return (
-    <NavigationContainer theme={AppTheme}>
+    <NavigationContainer linking={linking} theme={AppTheme}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,

@@ -20,6 +20,7 @@ import {
   Platform,
   PermissionsAndroid,
   Alert,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
@@ -63,23 +64,25 @@ const SearchScreen = ({ navigation, route }) => {
   }, [route.params?.youtubeURL]);
 
   const fetchSongData = async () => {
+
     if (!youtubeURL) {
       Alert.alert("Error", "Please enter a YouTube URL.");
       return;
     }
     setLoading(true);
     try {
-      const response = await fetch(
-        `${baseURL}/find-song?yt_url=${encodeURIComponent(youtubeURL)}`
-      );
+
+      const response = await fetch(`${baseURL}/find-song?yt_url=${encodeURIComponent(youtubeURL)}`);
       let data;
       if (response.headers.get("content-type")?.includes("application/json")) {
         data = await response.json();
+        console.log("✅ DATA RECEIVED:", data);
       } else {
         throw new Error("Invalid response format: Expected JSON");
       }
+
       if (data) {
-        setSongData(data);
+        navigation.navigate("Results", { songData: data }); // ✅ Safe to navigate now
       }
       const timestamp = new Date().toISOString();
       const newHistory = [
@@ -93,7 +96,13 @@ const SearchScreen = ({ navigation, route }) => {
         ["currentYouTubeLessonsUrl", data.youtube_lessons || ""],
         ["hasActiveSearch", "true"],
       ]);
-      navigation.navigate("Results", { songData: data });
+      console.log("✅ DATA RECEIVED:", data);
+      navigation.navigate({
+        name: "Results",
+        key: `Results-${Date.now()}`,
+        params: { songData: data }
+      });
+      
       setYoutubeURL(""); // Clear the input
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -120,6 +129,9 @@ const SearchScreen = ({ navigation, route }) => {
       } else if (Platform.OS === "ios") {
         const { status } = await Audio.requestPermissionsAsync();
         return status === "granted";
+      }
+      else if (Platform.OS === "web") {
+        return true;
       }
     } catch (error) {
       console.error("Permission error:", error.message || error);
@@ -161,18 +173,24 @@ const SearchScreen = ({ navigation, route }) => {
           audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
           sampleRate: 44100,
           bitRate: 128000,
-          numberOfChannels: 2,
         },
         ios: {
           extension: ".m4a",
-            outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
-            audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-            sampleRate: 44100,
-            numberOfChannels: 1,
-            bitRate: 128000,
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+        },
+        web: {
+          extension: ".mp3",    
+          outputFormat: Audio.RECORDING_OPTION_WEB_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_WEB_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          bitRate: 128000,
+          numberOfChannels: 2,
         },
       });
   
+
       // Start recording
       await newRecording.startAsync();
       setRecording(newRecording);
@@ -181,6 +199,12 @@ const SearchScreen = ({ navigation, route }) => {
       // Set countdown for 10 seconds
       setCountdown(10);
       let count = 10;
+
+      const getBlobFromUri = async (blobUri) => {
+        const response = await fetch(blobUri);
+        const blob = await response.blob();
+        return blob;
+      };
   
       const countdownInterval = setInterval(async () => {
         count--;
@@ -193,28 +217,35 @@ const SearchScreen = ({ navigation, route }) => {
             await newRecording.stopAndUnloadAsync();
             const uri = newRecording.getURI();
             console.log("Recording stopped, URI:", uri);
-  
-            // Prepare FormData for upload
+          
+            let fileToUpload;
+          
+            if (Platform.OS === "web") {
+              const audioBlob = await getBlobFromUri(uri);
+              fileToUpload = new File([audioBlob], "recording.mp3", { type: "audio/mpeg" });
+            } else {
+              fileToUpload = {
+                uri,
+                type: "audio/mpeg",
+                name: "recording.mp3",
+              };
+            }
+          
             const formData = new FormData();
-            formData.append("file", {
-              uri,
-              type: "audio/mpeg", // Use .mp3 for both platforms
-              name: "recording.mp3",
-            });
-  
-            // Upload to backend
+            formData.append("file", fileToUpload);
+          
             const response = await fetch(`${baseURL}/identify-audio`, {
               method: "POST",
               body: formData,
-              // Remove explicit Content-Type to let fetch handle boundary
             });
-  
+          
             if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
+              console.error("❌ Upload failed with status", response.status);
+              throw new Error(`Upload failed with status ${response.status}`);
             }
-  
-            const data = await response.json();
-            console.log("Backend response from /identify-audio:", data);
+          
+            const data = await response.json();  // <-- Only happens if upload succeeds!
+            console.log("✅ Backend response from /identify-audio:", data);
   
             // Update history
             const timestamp = new Date().toISOString();
@@ -222,8 +253,14 @@ const SearchScreen = ({ navigation, route }) => {
             setHistory(newHistory);
             await AsyncStorage.setItem("songHistory", JSON.stringify(newHistory));
   
+            console.log("✅ DATA RECEIVED:", data);
             // Navigate to results
-            navigation.navigate("Results", { songData: data });
+            navigation.navigate({
+              name: "Results",
+              key: `Results-${Date.now()}`,
+              params: { songData: data }
+            });
+            
           } catch (error) {
             console.error("Error processing recording:", error);
             Alert.alert("Error", "Failed to identify song from audio: " + error.message);
@@ -278,10 +315,12 @@ const SearchScreen = ({ navigation, route }) => {
   );
 };
 
+
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#121212",
+    backgroundColor: "#2B2D42",
     alignItems: "center",
     padding: 20,
     justifyContent: "center",
@@ -300,7 +339,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     marginBottom: 15,
-    borderColor: "#333",
+    borderColor: "#0A84FF",
     borderWidth: 1,
   },
   button: {
@@ -322,5 +361,44 @@ const styles = StyleSheet.create({
   loader: { marginVertical: 20 }
 });
 
+if (Platform.OS === "web") {
+  const { width } = Dimensions.get("window");
+  styles.container = {
+    ...styles.container,
+    width: width > 600 ? "50%" : "100%",
+    margin: "auto",
+  };
+  styles.input = {
+    ...styles.input,
+    width: "100%",
+    maxWidth: 400,
+  };
+  styles.button = {
+    ...styles.button,
+    width: "100%",
+    maxWidth: 400,
+  };
+  styles.recordingButton = {
+    ...styles.recordingButton,
+    width: "100%",
+    maxWidth: 400,
+  };
+  styles.loader = {
+    ...styles.loader,
+    marginVertical: 20,
+  };
+  styles.title = {
+    ...styles.title,
+    fontSize: 24,
+  };
+  styles.buttonText = {
+    ...styles.buttonText,
+    fontSize: 16,
+  };
+  styles.input.placeholderTextColor = "#FFFFFF"; // Adjust placeholder color for web
+  styles.input.borderColor = "#0A84FF"; // Adjust border color for web
+  styles.input.backgroundColor = "#1e1e1e"; // Adjust background color for web
+  styles.input.color = "#fff"; // Adjust text color for web
+}
 
 export default SearchScreen;

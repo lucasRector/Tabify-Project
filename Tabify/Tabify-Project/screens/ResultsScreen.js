@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Share,
+  Platform,
+  Dimensions,
 } from "react-native";
 
 const ResultsScreen = ({ navigation, route }) => {
@@ -66,7 +68,7 @@ const styles = StyleSheet.create({
   container: { 
     flexGrow: 1, 
     paddingHorizontal: 20, 
-    backgroundColor: "#121212", // Dark background
+    backgroundColor: "#2B2D42", // Dark background
     paddingTop: 40 
   },
   backButton: {
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
   songContainer: { 
     marginTop: 20, 
     padding: 20, 
-    backgroundColor: "#333", // Dark card background
+    backgroundColor: "#2B2D42", // Dark card background
     borderRadius: 15, 
     alignItems: "center", 
     width: "100%" 
@@ -128,5 +130,53 @@ const styles = StyleSheet.create({
       color: "#fff" // White text for buttons
   },
 });
+if (Platform.OS === "web") {
+  const { width } = Dimensions.get("window");
+  styles.container = {
+    ...styles.container,
+    width: width > 600 ? "50%" : "100%",
+    margin: "auto",
+    alignItems: "center",
+  };
+  styles.songContainer = {
+    ...styles.songContainer,
+    width: width > 600 ? "80%" : "100%",
+  };
+  styles.albumArt = {
+    ...styles.albumArt,
+    width: width > 600 ? 300 : 220,
+    height: width > 600 ? 300 : 220,
+  };
+  styles.shareButton = {
+    ...styles.shareButton,
+    width: width > 600 ? "80%" : "100%",
+  };
+  styles.shareButtonText = {
+    ...styles.shareButtonText,
+    fontSize: width > 600 ? 20 : 16,
+  };
+  styles.songTitle = {
+    ...styles.songTitle,
+    fontSize: width > 600 ? 28 : 22,
+  };
+  styles.artist = {
+    ...styles.artist,
+    fontSize: width > 600 ? 20 : 16,
+  };
+  styles.title = {
+    ...styles.title,
+    fontSize: width > 600 ? 36 : 28,
+  };
+  styles.backButtonText = {
+    ...styles.backButtonText,
+    fontSize: width > 600 ? 24 : 18,
+  };
+  styles.backButton = {
+    ...styles.backButton,
+    top: width > 600 ? 20 : 10,
+    left: width > 600 ? 20 : 10,
+  };
+
+}
 
 export default ResultsScreen;

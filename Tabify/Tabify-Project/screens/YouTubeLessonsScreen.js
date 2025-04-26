@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
+import { View, Text, StyleSheet, FlatList, Platform, Dimensions} from "react-native";
 import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -83,16 +83,30 @@ const YouTubeLessonsScreen = ({ route }) => {
   const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
       <Text style={styles.videoTitle}>YouTube Lesson #{index + 1}</Text>
-      <WebView
-        source={{ uri: `https://www.youtube.com/embed/${item}?rel=0` }}
-        style={styles.video}
-        allowsFullscreenVideo
-        javaScriptEnabled
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.error("WebView error for video", item, ":", nativeEvent);
-        }}
-      />
+      {Platform.OS === "web" ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${item}?rel=0`}
+          style={{ width: "100%", height: 200, border: 0 }}
+          title={`YouTube Video ${index + 1}`}
+          allowFullScreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        />
+      ) : (
+        <WebView
+          source={{ uri: `https://www.youtube.com/embed/${item}?rel=0` }}
+          style={styles.video}
+          allowsFullscreenVideo
+          javaScriptEnabled
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error("WebView error for video", item, ":", nativeEvent);
+          }}
+          onHttpError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error("HTTP error for video", item, ":", nativeEvent);
+          }}
+        />
+      )}
     </View>
   );
 
@@ -120,7 +134,7 @@ const YouTubeLessonsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#121212",
+    backgroundColor: "2B2D42",
     paddingHorizontal: 10,
     paddingBottom: 20,
   },
@@ -128,6 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E1E1E",
     borderRadius: 10,
     borderWidth: 2,
+    width: "100%",
     borderColor: "#0A84FF",
     marginVertical: 16,
     padding: 10,
@@ -146,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#121212",
+    backgroundColor: "#1E1E1E",
     padding: 20,
   },
   emptyTitle: {
@@ -162,5 +177,50 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+if (Platform.OS === "web") {
+  const { width } = Dimensions.get("window");
+  styles.container = {
+    ...styles.container,
+    width: width > 600 ? "90%" : "100%",
+    margin: "auto",
+    alignItems: "center",
+  };
+  styles.videoContainer = {
+    ...styles.videoContainer,
+    width: width > 600 ? "100%" : "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#0A84FF",
+  };
+  styles.video = {
+    ...styles.video,
+    width: width > 600 ? "100%" : "100%",
+  };
+  styles.emptyContainer = {
+    ...styles.emptyContainer,
+    width: width > 600 ? "100%" : "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    marginVertical: 12,
+    borderWidth: 2,
+    borderColor: "#0A84FF",
+  };
+  styles.emptyTitle = {
+    ...styles.emptyTitle,
+    fontSize: width > 600 ? 28 : 24,
+  };
+  styles.emptyMessage = {
+    ...styles.emptyMessage,
+    fontSize: width > 600 ? 20 : 16,
+  };
+  styles.videoTitle = {
+    ...styles.videoTitle,
+    fontSize: width > 600 ? 24 : 18,
+  };
+
+}
 
 export default YouTubeLessonsScreen;
