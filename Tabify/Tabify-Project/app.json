@@ -4,19 +4,19 @@
     "slug": "MyApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/tabify-icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/tabify-icon.png",
       "backgroundColor": "#f7f7f7"
     },
     "ios": {
       "supportsTablet": true
     },
-    "android": {
+    "android": {  
       "adaptiveIcon": {
-        "foregroundImage": "./assets/tabify-logo.png",
+        "foregroundImage": "./assets/tabify-icon.png",
         "backgroundColor": "#f7f7f7"
       },
       "permissions": [

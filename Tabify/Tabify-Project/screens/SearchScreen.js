@@ -21,6 +21,8 @@ import {
   PermissionsAndroid,
   Alert,
   Dimensions,
+  Linking,
+  useWindowDimensions
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
@@ -283,35 +285,100 @@ const SearchScreen = ({ navigation, route }) => {
       }
     }
   };
+  const handlePress = () => {
+    Linking.openURL("https://expo.dev/artifacts/eas/3vKduySijtA8ZYnofAo3Rt.apk");
+  };
+  const windowDimensions = useWindowDimensions();
 
+  // Always fallback just in case
+  const width = windowDimensions?.width || 1024; // safe default for desktop
+  
+  const isMobileWeb = Platform.OS === "web" && width < 768;
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Tabify Song Finder</Text>
-      <TextInput 
-        style={styles.input} 
-        placeholder="Enter YouTube URL" 
-        value={youtubeURL} 
-        onChangeText={setYoutubeURL} 
-        placeholderTextColor="#aaa" 
-      />
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={fetchSongData} 
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>Find Song</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.button, recording && styles.recordingButton]}
-        onPress={startRecordingAndCountdown}
-        disabled={recording !== null || loading}
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Tabify Song Finder</Text>
+        <TextInput 
+          style={styles.input} 
+          placeholder="Enter YouTube URL" 
+          value={youtubeURL} 
+          onChangeText={setYoutubeURL} 
+          placeholderTextColor="#aaa" 
+        />
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={fetchSongData} 
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Find Song</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, recording && styles.recordingButton]}
+          onPress={startRecordingAndCountdown}
+          disabled={recording !== null || loading}
         >
           <Text style={styles.buttonText}>
             {recording ? `Recording (${countdown}s)` : "Record Audio"}
           </Text>
+        </TouchableOpacity>
+        {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
+      </ScrollView>
+     
+      <View 
+        id="qrCode" 
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          backgroundColor: "#2B2D42",
+          alignItems: "center",
+          width: 200,
+          height: 200,
+          display: (!isMobileWeb) ? "flex" : "none", // <-- hide if not web
+        }}
+      > 
+      <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 10, textAlign: "center", color: "0A84FF", backgroundColor: "#7f7f7f" }}>
+          Scan or tap to download
+      </Text>
+        <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
+          <Image
+            source={{ uri: "https://qrcodeveloper.com/qr/images/image_AlLxLOE.jpg" }}
+            style={{
+              width: 175,
+              height: 175,
+              backgroundColor: "#2B2D42",
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+      <View
+        alignItems="center"
+        height={200}
+        width={200}
+        style = {{display: (isMobileWeb) ? "flex" : "none", 
+          justifyContent: "center",
+          alignItems: "center",}}
+      >
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 10,
+            textAlign: "center",
+            color: "#0A84FF", // Corrected text color
+            backgroundColor: "#f0f0f0", // Slightly lighter background for contrast
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 8,
+            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Add shadow for subtle effect
+          }}
+        >
+          Tap To Download Android App
+        </Text>
       </TouchableOpacity>
-      {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
-    </ScrollView>
+      </View>
+    </>
   );
 };
 
