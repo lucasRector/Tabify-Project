@@ -100,7 +100,7 @@ const HistoryStack = () => (
 
 const App = () => {
   const linking = {
-    prefixes: ['http://localhost:8081'],
+    prefixes: ['http://localhost:8081', 'http://tabify-guitar-learning.vercel.app'],
     config: {
       screens: {
         Search: {
