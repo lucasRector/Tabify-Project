@@ -323,7 +323,7 @@ const SearchScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
       </ScrollView>
-     
+      
       <View 
         id="qrCode" 
         style={{
@@ -334,7 +334,7 @@ const SearchScreen = ({ navigation, route }) => {
           alignItems: "center",
           width: 200,
           height: 200,
-          display: (!isMobileWeb) ? "flex" : "none", // <-- hide if not web
+          display: (Platform.os === 'web' && (!isMobileWeb)) ? "flex" : "none", // <-- hide if not web
         }}
       > 
       <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 10, textAlign: "center", color: "0A84FF", backgroundColor: "#7f7f7f" }}>
