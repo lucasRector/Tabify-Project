@@ -1,3 +1,14 @@
+/**
+ * GuitarTabsScreen component displays a WebView for browsing guitar tabs.
+ * It includes functionality to block ads, handle navigation, and manage state.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.route - The route object containing navigation parameters.
+ * @param {Object} props.route.params - The parameters passed to the route.
+ * @param {string} [props.route.params.url] - The URL to load in the WebView.
+ *
+ * @returns {JSX.Element} The GuitarTabsScreen component.
+ */
 import React, { useState, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { WebView } from "react-native-webview";
@@ -13,7 +24,8 @@ const GuitarTabsScreen = ({ route }) => {
   const webViewRef = useRef(null);
 
   // JavaScript to block pop-ups and Songsterr-specific elements
-  
+  // This script is injected into the WebView to hide ads and pop-ups
+  // It uses a MutationObserver to watch for changes in the DOM and hide elements that match certain criteria
   const blockAdsScript = `
   (function() {
     // Utility to hide an element
@@ -117,6 +129,8 @@ const GuitarTabsScreen = ({ route }) => {
     display: none !important;
   }
 `;
+  // Injected JavaScript to add custom CSS and block ads
+  // This script creates a style element and appends it to the document head
   const injectedJavaScript = `
   (function() {
     const style = document.createElement('style');
@@ -127,6 +141,8 @@ const GuitarTabsScreen = ({ route }) => {
 `;
 
 
+  // useFocusEffect is a hook that runs when the screen is focused
+  // This is used to load the URL from AsyncStorage when the screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadUrl = async () => {
@@ -155,23 +171,31 @@ const GuitarTabsScreen = ({ route }) => {
     }, [url])
   );
 
+  // Function to handle navigation state changes in the WebView
+  // This function updates the canGoBack and canGoForward states based on the WebView's navigation state
   const handleNavigationStateChange = (navState) => {
     setCanGoBack(navState.canGoBack);
     setCanGoForward(navState.canGoForward);
   };
 
+  // Function to handle the back button action
+  // This function checks if the WebView can go back and navigates to the previous page if possible
   const handleGoBack = () => {
     if (webViewRef.current && canGoBack) {
       webViewRef.current.goBack();
     }
   };
 
+  // Function to handle the forward button action
+  // This function checks if the WebView can go forward and navigates to the next page if possible
   const handleGoForward = () => {
     if (webViewRef.current && canGoForward) {
       webViewRef.current.goForward();
     }
   };
 
+  // Function to handle the home button action
+  // This function sets the canGoBack and canGoForward states to false and navigates to the home URL
   const handleGoHome = () => {
     if (webViewRef.current && displayUrl) {
       setCanGoBack(false);
@@ -180,6 +204,8 @@ const GuitarTabsScreen = ({ route }) => {
     }
   };
 
+  // Function to handle URL requests in the WebView
+  // This function checks if the URL contains "songsterr://" and blocks it if it does
   const handleShouldStartLoadWithRequest = (request) => {
     if (request.url.includes('songsterr://')) {
       console.log("Blocked navigation to app URL:", request.url);
@@ -188,6 +214,8 @@ const GuitarTabsScreen = ({ route }) => {
     return true;
   };
 
+  // If no URL is provided and no stored URL is found, show a message indicating that there are no tabs yet
+  // This is done by checking the hasContent state variable
   if (!hasContent) {
     return (
       <View style={styles.emptyContainer}>
@@ -199,6 +227,8 @@ const GuitarTabsScreen = ({ route }) => {
     );
   }
 
+  //Return the main component
+  // This includes the WebView for displaying the content, and the bottom navigation bar for back, home, and forward actions
   return (
     <View style={styles.container}>
       <View style={styles.container}>
@@ -254,6 +284,8 @@ const GuitarTabsScreen = ({ route }) => {
   );
 };
 
+// Styles for the GuitarTabsScreen component
+// This includes styles for the container, buttons, text, and images
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -303,6 +335,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+// Styles for the web view
 if (Platform.OS === "web") {
   styles.webContainer = {
     flex: 1,

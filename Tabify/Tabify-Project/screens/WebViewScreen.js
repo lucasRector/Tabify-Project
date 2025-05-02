@@ -1,3 +1,15 @@
+/**
+ * WebViewScreen component renders a web view or iframe based on the platform.
+ * It displays the content of a given URL passed through the route parameters.
+ *
+ * @component
+ * @param {Object} props - The props object.
+ * @param {Object} props.route - The route object containing navigation parameters.
+ * @param {Object} props.route.params - The parameters passed to the route.
+ * @param {string} props.route.params.url - The URL to be displayed in the WebView or iframe.
+ *
+ * @returns {JSX.Element} A SafeAreaView containing a WebView (for mobile) or iframe (for web).
+ */
 import React from "react";
 import { SafeAreaView, StyleSheet, Platform } from "react-native";
 import { WebView } from "react-native-webview";

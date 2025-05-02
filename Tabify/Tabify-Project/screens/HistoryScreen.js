@@ -1,3 +1,39 @@
+/**
+ * HistoryScreen component displays a list of previously searched songs,
+ * allowing users to search, select, and delete items from their history.
+ * 
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.navigation - Navigation object provided by React Navigation.
+ * 
+ * @returns {JSX.Element} The rendered HistoryScreen component.
+ * 
+ * @example
+ * <HistoryScreen navigation={navigation} />
+ * 
+ * @description
+ * Features:
+ * - Displays a list of songs from AsyncStorage.
+ * - Allows users to search through the history.
+ * - Supports selection mode for deleting specific items.
+ * - Provides an option to clear all history.
+ * - Adapts styles for web and mobile platforms.
+ * 
+ * State Variables:
+ * - `history` (Array): Full list of song history.
+ * - `filteredHistory` (Array): Filtered list based on search query.
+ * - `searchQuery` (string): Current search input value.
+ * - `isSelecting` (boolean): Indicates if selection mode is active.
+ * - `selectedItems` (Array): Indices of selected items in the history.
+ * 
+ * Functions:
+ * - `loadHistory`: Loads song history from AsyncStorage.
+ * - `toggleSelectionMode`: Toggles selection mode on/off.
+ * - `toggleItemSelection`: Adds/removes an item from the selected list.
+ * - `deleteSelectedItems`: Deletes selected items from history.
+ * - `clearAllHistory`: Clears all song history from AsyncStorage.
+ * - `renderItem`: Renders each song item in the list.
+ */
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -13,6 +49,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// HistoryScreen component
+// This component displays the user's search history and allows them to manage it
 const HistoryScreen = ({ navigation }) => {
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
@@ -20,6 +58,7 @@ const HistoryScreen = ({ navigation }) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
 
+  // Load history from AsyncStorage when the component mounts
   useEffect(() => {
     const loadHistory = async () => {
       try {
@@ -36,11 +75,13 @@ const HistoryScreen = ({ navigation }) => {
     loadHistory();
   }, []);
 
+  // Filter history based on search query
   const toggleSelectionMode = () => {
     setIsSelecting(!isSelecting);
     setSelectedItems([]);
   };
 
+  //
   const toggleItemSelection = (index) => {
     const actualIndex = history.findIndex(
       (item) => item.youtubeURL === filteredHistory[index].youtubeURL
@@ -52,6 +93,8 @@ const HistoryScreen = ({ navigation }) => {
     }
   };
 
+  // Delete selected items from history
+  // This function removes the selected items from the history array and updates AsyncStorage
   const deleteSelectedItems = async () => {
     if (selectedItems.length === 0) return;
 
@@ -67,6 +110,8 @@ const HistoryScreen = ({ navigation }) => {
     }
   };
 
+  // Clear all history from AsyncStorage
+  // This function removes all items from the history array and updates AsyncStorage
   const clearAllHistory = async () => {
     try {
       await AsyncStorage.removeItem("songHistory");
@@ -79,6 +124,8 @@ const HistoryScreen = ({ navigation }) => {
     }
   };
 
+  // renderItem function to display each item in the history list
+  // This function formats the timestamp and displays the song name, artist, and album art
   const renderItem = ({ item, index }) => {
     const actualIndex = history.findIndex(
       (h) => h.youtubeURL === item.youtubeURL
@@ -91,6 +138,7 @@ const HistoryScreen = ({ navigation }) => {
         })}`
       : "Unknown date";
 
+      
     return (
       <TouchableOpacity
         style={[
@@ -110,7 +158,7 @@ const HistoryScreen = ({ navigation }) => {
       >
         <Image
           source={{
-            uri: item.spotify?.album_art || "https://via.placeholder.com/50",
+            uri: item.spotify?.album_art || "https://via.placeholder.com/50", // Placeholder image if no album art is available
           }}
           style={styles.albumArt}
         />
@@ -123,6 +171,8 @@ const HistoryScreen = ({ navigation }) => {
     );
   };
 
+  // return the main component structure
+  // This includes the header with buttons, search input, and the list of history items
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -171,6 +221,9 @@ const HistoryScreen = ({ navigation }) => {
     </View>
   );
 };
+
+// Styles for the HistoryScreen component
+// This includes styles for the container, buttons, text, and images
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -280,6 +333,8 @@ const styles = StyleSheet.create({
   },
 });
 
+// Adjust styles for web platform
+// This includes styles for the container, buttons, text, and images
 if (Platform.OS === "web") {
   const { width } = Dimensions.get("window");
   const isWideScreen = width > 600;
