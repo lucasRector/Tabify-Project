@@ -394,7 +394,7 @@ const SearchScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
       </ScrollView>
-     
+      
       <View 
         id="qrCode" 
         style={{
