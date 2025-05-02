@@ -3,22 +3,111 @@
 ## Overview
 Tabify is a React Native-based mobile application designed to help users search for guitar tabs using audio or links from platforms like YouTube, Spotify, or Apple Music. The app integrates with the Songsterr website to display search results and offers a range of features to enhance the user experience.
 
-### Features by Development Levels
+# Tabify - Learn Guitar Faster
 
-#### Base Level Features:
-- Shazam-like search using audio or music platform links.
-- Display search results as guitar tabs using the Songsterr website within a built-in browser.
-- Basic UI design with a search tab and results tab.
-- Built using React Native.
+## Teammates
 
-#### Second Level Features:
-- Display YouTube video tutorials based on Shazam search results using a built-in browser.
-- Improved UI design with loading screens, logos, and transitions.
+* Daniel Ward
+* Lucas Rector
 
-#### Third Level Features:
-- Display search results directly within the app instead of using a browser pop-up.
-- Add metronome, timing, and other quality-of-life features.
-- Optimize previously implemented features.
+---
+
+## 🌟 Features
+
+* Search for a song via YouTube URL
+* Identify song from recorded audio
+* Display results: song name, artist, album art
+* Navigate to guitar tabs or YouTube lessons
+* Guitar Tabs via Songsterr
+* View and manage search history
+* Responsive for web and mobile (React Native Web) 
+* Spotify album integration
+* CORS-safe and production backend with FastAPI on Railway
+
+---
+
+## 🛠️ Technologies Used
+
+* **Frontend:** React Native, Expo, React Navigation, React Native Web, Axios
+* **Backend:** Python, FastAPI, Spotipy, Shazamio, YouTube Data API
+* **DevOps:** Railway (backend hosting), Vercel (web hosting)
+* **Other Libraries:** react-native-webview, expo-av, react-native-async-storage
+* **Tools:** Shazamio for audio recognition, Spotipy for metadata lookup
+
+---
+
+## 🔍 Feature: YouTube URL Search
+
+* User pastes a YouTube link
+* Audio is downloaded and analyzed
+* Spotify, YouTube, and tab metadata retrieved
+
+---
+
+## 🎤 Feature: Audio Recording Search
+
+* 10-second in-app audio recording
+* Automatically recognized via Shazam API
+* Same enrichment process as YouTube URL
+
+---
+
+## 🎶 Feature: Results Screen
+
+* Displays song, artist, and Spotify album art
+* Navigation buttons to guitar tabs and YouTube lessons
+* Shareable result options
+
+---
+
+## 🎻 Feature: Guitar Tabs Viewer
+
+* Tab link embedded (Songsterr)
+* Songsterr displayed natively in app version 
+
+---
+
+## 🎥 Feature: YouTube Lessons Viewer
+
+* Embedded YouTube guitar lessons
+* Renders top 3 videos
+* Web-compatible using iframe
+
+---
+
+## 📅 Feature: Search History
+
+* Stores previous searches locally (AsyncStorage)
+* Timestamped with album art
+* Deletable and searchable
+
+---
+
+## 🤔 What Did We Learn?
+
+* How to integrate external APIs (Spotify, YouTube, Shazam)
+* How to make and run a pyhton backen to handle APIs via FastAPI
+* How to start and buld upon a React Native Expo App
+* React Native development process and structure
+* UI/UX design principles and planning
+* How to develop for both IOS and Android via React Native and Expo
+* How to deploy a backend via Railway
+* Securely manage environment variables in Railway
+* How to scrape data and prepare it for production APIs
+* Using Expo's built in Android APK deployment
+* Making React Native apps responsive for web (Expo Web)
+* How to deploy a React Native Website via Vercel
+* Navigating limitations of embedding third-party websites (Songsterr X-Frame)
+* Debugging permissions and audio configurations across platforms
+
+---
+
+## 📆 Future Plans
+
+* Replace Songsterr with plaintext tabs in MongoDB
+* Add tab player with metronome and visual cursor
+* Enhance error handling and fallback for failed audio ID
+* Launch on Google Play and Apple App Store
 
 ## Project Setup and Instructions
 
